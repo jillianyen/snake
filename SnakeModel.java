@@ -1,21 +1,33 @@
 package snake2;
 
-import java.util.*;
+import java.util.Random;
+import java.util.Scanner;
 
 public class SnakeModel
 {
-
-	private char[][] board; 
-	public int osEaten = 0;
+	public char[][] board;
+	public int boardsize = 20;
+	public int boardTiles = boardsize*boardsize;
+	public int foodEaten = 0;
+	public int xPosOfFood;
+	public int yPosOfFood;
+	public int snakeBodyX[] = new int[boardTiles];
+	public int snakeBodyY[] = new int[boardTiles];
+	public int snakeSize = 3;
+	public int score = 0; 
+	Random rand = new Random();
+	Scanner scan = new Scanner(System.in);
 	
-	public SnakeModel(int boardsize)
+	public SnakeModel()
 	{
 		setBoard(new char[boardsize][boardsize]);
 		initBoard(getBoard());
-		placeO(getBoard());
-		placeStart(getBoard());
+		initSnake(getBoard());
+		System.out.println("Score: " + score);
+//		printBoard(getBoard());
+	//	move(getBoard()); //use only when not playing with graphics
 	}
-	
+	//fill board with '.'s
 	public void initBoard(char[][] board)
 	{
 		for(int i = 0; i < board.length; i++) {
@@ -23,39 +35,170 @@ public class SnakeModel
 				board[i][j] = '.';
 			}
 		}
+		placeFood(getBoard());
 	}
-	public void placeO(char[][] board)
+	//initialize snake of size snakeSize. the head = 'x', the body = 's'. places head in center of board with body going downwards
+	public void initSnake(char[][] board)
 	{
-		Random rand = new Random();
-		int x = rand.nextInt(board.length);
-		int y = rand.nextInt(board.length);
-		if(board[x][y] != '.')
+		for(int i = 0; i < snakeSize; i++)
 		{
-			x = rand.nextInt(board.length);
-			y = rand.nextInt(board.length);
-			board[x][y] = 'o';
-		} else {
-			board[x][y] = 'o';
+			if(i==0)//head of snake
+			{
+				snakeBodyX[i] = boardsize/2;
+				snakeBodyY[i] = boardsize/2;
+				board[snakeBodyX[i]][snakeBodyY[i]] = 'x';
+			}
+			else //snake body
+			{
+				snakeBodyX[i] = getHeadX(board)+i; 
+				snakeBodyY[i] = getHeadY(board);
+				board[snakeBodyX[i]][snakeBodyY[i]] = 's';
+			}
+		}
+		
+	}
+	public void right(char[][] board)
+	{
+		clearBody(board);
+		for(int i = snakeSize; i>0; i--) {
+			snakeBodyX[i] = snakeBodyX[i-1];
+			snakeBodyY[i] = snakeBodyY[i-1];
+			board[snakeBodyX[i]][snakeBodyY[i]] = 's';
+		}
+		snakeBodyY[0] += 1;
+		checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
+		board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+//		printBoard(board);
+	}
+	public void left(char[][] board)
+	{
+		clearBody(board);
+		for(int i = snakeSize; i>0; i--) {
+			snakeBodyX[i] = snakeBodyX[i-1];
+			snakeBodyY[i] = snakeBodyY[i-1];
+			board[snakeBodyX[i]][snakeBodyY[i]] = 's';
+		}
+		snakeBodyY[0] -= 1;
+		checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
+		board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+//		printBoard(board);
+	}
+	public void up(char[][] board)
+	{
+		clearBody(board);
+		for(int i = snakeSize; i>0; i--) {
+			snakeBodyX[i] = snakeBodyX[i-1];
+			snakeBodyY[i] = snakeBodyY[i-1];
+			board[snakeBodyX[i]][snakeBodyY[i]] = 's';
+		}
+		snakeBodyX[0] -= 1; 
+		checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
+		board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+//		printBoard(board);
+	}
+	public void down(char[][] board)
+	{
+		clearBody(board);
+		for(int i = snakeSize; i>0; i--) {
+			snakeBodyX[i] = snakeBodyX[i-1];
+			snakeBodyY[i] = snakeBodyY[i-1];
+			board[snakeBodyX[i]][snakeBodyY[i]] = 's';
+		}
+		snakeBodyX[0] += 1; 
+		checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
+		board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+//		printBoard(board);
+	}
+	//used when playing without graphics, need to edit
+	public void move(char[][] board)
+	{
+		while(true)
+		{
+			clearBody(board);
+			
+			//fill in body of snake.
+			//start with last element. the new location of each element is the previous element's old location
+			for(int i = snakeSize; i>0; i--) {
+				snakeBodyX[i] = snakeBodyX[i-1];
+				snakeBodyY[i] = snakeBodyY[i-1];
+				board[snakeBodyX[i]][snakeBodyY[i]] = 's';
+			}
+			
+			//moving head of snake depending on input
+			int input = scan.nextInt();
+			if(input == 2) {
+				snakeBodyX[0] += 1; 
+				checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
+				board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+				printBoard(board);
+			}
+			if(input == 4) {
+				snakeBodyY[0] -= 1;
+				checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
+				board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+				printBoard(board);
+			}
+			if(input == 8) {
+				snakeBodyX[0] -= 1; 
+				checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
+				board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+				printBoard(board);
+			}
+			if(input == 6) {
+				snakeBodyY[0] += 1;
+				checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
+				board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+				printBoard(board);
+			}
 		}
 	}
-	public void placeStart(char[][] board)
+	//check spot that head lands on when moved
+	public void checkSpot(char[][] board, int x, int y)
 	{
-		Random rand = new Random();
-		int x = rand.nextInt(board.length);
-		int y = rand.nextInt(board.length);
-		board[x][y] = 'x';
+		if(board[x][y] == 'o') //means you ate a food. increase score and place another food
+		{
+			placeFood(board);
+			snakeSize++;
+			score++;
+			System.out.println("Score: " + score);
+		}
+		if(board[x][y] == 's')//means you ran into yourself. end game and display score
+		{
+			System.out.println("You lose");
+			System.out.println("Score: " + score);
+		}
+		if(board[x][y] != '.' && board[x][y] != 'o' && board[x][y] != 's')//means you went offscreen
+		{
+			System.out.println("You lose");
+			System.out.println("Score: "+score);
+		}
 	}
-	public void printBoard(char[][] board)
+	//remove all 's's on board
+	public void clearBody(char[][] board)
 	{
 		for(int i = 0; i < board.length; i++) {
 			for(int j = 0; j < board.length; j++) {
-				System.out.print(board[i][j] + " ");
+				if(board[i][j] == 's') {
+					board[i][j] = '.';
+				}
 			}
-			System.out.println();
 		}
 	}
-	
-	
+	//'o' on board represents a food. place one o on board in random spot
+	public void placeFood(char[][] board)
+	{
+		xPosOfFood = rand.nextInt(board.length);
+		yPosOfFood = rand.nextInt(board.length);
+		if(board[xPosOfFood][yPosOfFood] != '.')
+		{
+			xPosOfFood = rand.nextInt(board.length);
+			yPosOfFood = rand.nextInt(board.length);
+			board[xPosOfFood][yPosOfFood] = 'o';
+		} else {
+			board[xPosOfFood][yPosOfFood] = 'o';
+		}
+	}
+	//get x coor of snake head
 	public int getHeadX(char[][] board)
 	{
 		int x = 0;
@@ -68,7 +211,7 @@ public class SnakeModel
 		}
 		return x;
 	}
-	//get snake head y coor
+	//get y coor of snake head
 	public int getHeadY(char[][] board)
 	{
 		int y = 0;
@@ -80,9 +223,9 @@ public class SnakeModel
 			}
 		}
 		return y;
-	}
-	
-	public int getOx(char[][] board)
+	}	
+	//get x coor of food
+	public int getFoodX(char[][] board)
 	{
 		int x = 0;
 		for(int i = 0; i < board.length; i++) {
@@ -94,8 +237,8 @@ public class SnakeModel
 		}
 		return x;
 	}
-	
-	public int getOy(char[][] board)
+	//get y coor of food
+	public int getFoodY(char[][] board)
 	{
 		int y = 0;
 		for(int i = 0; i < board.length; i++) {
@@ -107,76 +250,27 @@ public class SnakeModel
 		}
 		return y;
 	}
-	
-	
-	public void moveDown(char [][] board)
+	public void printBoard(char[][] board)
 	{
-		int x = getHeadX(board);
-		int y = getHeadY(board);
-		board[x][y] = '.';
-		x = x+1;
-		checkSpot(board, x, y);
-		board[x][y] = 'x';
-		printBoard(board);
-	//	return board;
-	}
-	public void moveUp(char [][]board)
-	{
-		int x = getHeadX(board);
-		int y = getHeadY(board);
-		board[x][y] = '.';
-		x = x-1;
-		checkSpot(board, x, y);
-		board[x][y] = 'x';
-		printBoard(board);
-		//return board; 
-	}
-	public void moveRight(char [][] board)
-	{
-		int x = getHeadX(board);
-		int y = getHeadY(board);
-		board[x][y] = '.';
-		y = y+1;
-		checkSpot(board, x, y);
-		board[x][y] = 'x';
-		printBoard(board);
-		//return board; 
-	}
-	public void moveLeft(char [][] board)
-	{
-		int x = getHeadX(board);
-		int y = getHeadY(board);
-		board[x][y] = '.';
-		y-=1;
-		checkSpot(board, x, y);
-	    board[x][y] = 'x';
-	    printBoard(board);
-	//	return board;
-	}
-	//after moving snake head, check curr spot to see if you at an o, if so, place a new random o on board
-	public void checkSpot(char[][] board, int x, int y)
-	{
-		if(board[x][y] == 'o')
-		{
-			placeO(board);
+		for(int i = 0; i < board.length; i++) {
+			for(int j = 0; j < board.length; j++) {
+				System.out.print(board[i][j] + " ");
+			}
+			System.out.println();
 		}
 	}
 	public char[][] getBoard()
 	{
 		return board;
 	}
-
-	//used in constructor so model can use board var outside of this class using getBoard()
 	public void setBoard(char[][] board)
 	{
 		this.board = board;
 	}
-	
 	public static void main(String[] args)
 	{
-		SnakeModel model = new SnakeModel(10);
-		model.printBoard(model.getBoard());
+		SnakeModel model = new SnakeModel();
+		//model.printBoard(model.board);
 	}
-
 
 }
