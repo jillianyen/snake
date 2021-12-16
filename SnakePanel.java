@@ -2,22 +2,15 @@ package snake2;
 
 import java.awt.*;
 import java.awt.event.*;
-
 import javax.swing.*;
 
-public class SnakePanel extends JPanel implements KeyListener, ActionListener
+public class SnakePanel extends JPanel implements KeyListener
 {
-	final int PANEL_SIZE = 500;//panel will be square, so height and width both are same size
-	final int UNIT_SIZE = 20; //panel size / model board size for unit size
-	
-	int xHead, yHead, xO, yO; 
-	
-	Timer timer;
-	int xVel = UNIT_SIZE;
-	int yVel = UNIT_SIZE; 
-	int speed = 200;//bigger num = slower speed
-	
+	final int PANEL_SIZE = 500;
+	final int UNIT_SIZE = PANEL_SIZE/20; //unitsize = panelsize/boardsize
 	private SnakeFrame frame;
+	int foodX;
+	int foodY;
 	
 	SnakePanel(SnakeFrame frame)
 	{
@@ -27,79 +20,72 @@ public class SnakePanel extends JPanel implements KeyListener, ActionListener
 		this.addKeyListener(this);
 		this.setFocusable(true);//needed so keylistener works in panel
 		this.setFocusTraversalKeysEnabled(false);//needed to keylistener works in panel
-		timer = new Timer(speed, this);
-		timer.start();
 	}
-	
 	
 	public void paintComponent(Graphics g)
 	{
 		super.paintComponent(g);
-		drawGrid(g);
-		drawHead(g);
-		drawO(g);
+		
+		drawFood(g);	
+		drawSnake(g);
+	//	drawGrid(g);
 		repaint();
 	}
 	
 	public void drawGrid(Graphics g)
 	{
 		for(int i = 0; i < PANEL_SIZE/UNIT_SIZE; i++) {
+			g.setColor(Color.black);
 			g.drawLine(i*UNIT_SIZE, 0, i*UNIT_SIZE, PANEL_SIZE);
 			g.drawLine(0, i*UNIT_SIZE, PANEL_SIZE,i*UNIT_SIZE);
 		}
 	}
-	public void drawHead(Graphics g)
+	
+	public void drawFood(Graphics g)
 	{
-		xHead = frame.getModel().getHeadY(frame.getModel().getBoard());
-		yHead = frame.getModel().getHeadX(frame.getModel().getBoard());
+		foodX = frame.getModel().getFoodY(frame.getModel().getBoard());
+		foodY = frame.getModel().getFoodX(frame.getModel().getBoard());
 		
-		//drawing it on panel
-		g.setColor(Color.RED);
-		g.fillRect(xHead*UNIT_SIZE, yHead*UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
-	}
-	public void drawO(Graphics g)
-	{
-		//getting x and y coor of o from model
-		xO = frame.getModel().getOy(frame.getModel().getBoard());
-		yO = frame.getModel().getOx(frame.getModel().getBoard());
+		foodX *= UNIT_SIZE;
+		foodY *= UNIT_SIZE;
 		
-		//drawing it on panel
 		g.setColor(Color.YELLOW);
-		g.fillRect(xO*UNIT_SIZE, yO*UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
+		g.fillRect(foodX, foodY, UNIT_SIZE, UNIT_SIZE);
 	}
-	
-	
-
-	@Override
-	public void keyPressed(KeyEvent e)
+	public void drawSnake(Graphics g)
 	{
-		int arrowpressed = e.getKeyCode();
-		if(arrowpressed == 37) {
-			frame.getModel().moveLeft(frame.getModel().getBoard());
-		}
-		if(arrowpressed == 38) {
-			frame.getModel().moveUp(frame.getModel().getBoard());
-		}
-		if(arrowpressed == 39) {
-			frame.getModel().moveRight(frame.getModel().getBoard());
-		}
-		if(arrowpressed == 40) {
-			frame.getModel().moveDown(frame.getModel().getBoard());
+		for(int i = 0; i < frame.getModel().getBoard().length; i++) {
+			for(int j = 0; j < frame.getModel().getBoard().length; j++) {
+				if(frame.getModel().getBoard()[i][j] == 'x') {
+					g.setColor(Color.red);
+					g.fillRect(j*UNIT_SIZE, i*UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
+				} 
+				else if (frame.getModel().getBoard()[i][j] == 's') {
+					g.setColor(Color.pink);
+					g.fillRect(j*UNIT_SIZE, i*UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
+				}
+			}
 		}
 	}
 	@Override
 	public void keyTyped(KeyEvent e){}
 	@Override
-	public void keyReleased(KeyEvent e){}
-
-//DOESN'T WORK
-	@Override
-	public void actionPerformed(ActionEvent e)
+	public void keyPressed(KeyEvent e) 
 	{
-		repaint();
-		xHead = frame.getModel().getHeadY(frame.getModel().getBoard());
-		yHead = frame.getModel().getHeadX(frame.getModel().getBoard());
-		xHead += xVel;
-		yHead += yVel;
+		int arrowpressed = e.getKeyCode();
+		if(arrowpressed == 37) {
+			frame.getModel().left(frame.getModel().getBoard());
+		}
+		if(arrowpressed == 38) {
+			frame.getModel().up(frame.getModel().getBoard());
+		}
+		if(arrowpressed == 39) {
+			frame.getModel().right(frame.getModel().getBoard());
+		}
+		if(arrowpressed == 40) {
+			frame.getModel().down(frame.getModel().getBoard());
+		}
 	}
+	@Override
+	public void keyReleased(KeyEvent e) {}
 }
