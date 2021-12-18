@@ -1,12 +1,10 @@
-package snake2;
-
 import java.util.Random;
 import java.util.Scanner;
 
 public class SnakeModel
 {
 	public char[][] board;
-	public int boardsize = 20;
+	public int boardsize = 20;//make sure this corresponds to UNIT_SIZE in panel
 	public int boardTiles = boardsize*boardsize;
 	public int foodEaten = 0;
 	public int xPosOfFood;
@@ -15,6 +13,7 @@ public class SnakeModel
 	public int snakeBodyY[] = new int[boardTiles];
 	public int snakeSize = 3;
 	public int score = 0; 
+	public boolean running = true; 
 	Random rand = new Random();
 	Scanner scan = new Scanner(System.in);
 	
@@ -24,8 +23,8 @@ public class SnakeModel
 		initBoard(getBoard());
 		initSnake(getBoard());
 		System.out.println("Score: " + score);
-//		printBoard(getBoard());
-	//	move(getBoard()); //use only when not playing with graphics
+		//printBoard(getBoard());//comment in only when not playing with graphics
+		//move(getBoard()); //comment in only when not playing with graphics
 	}
 	//fill board with '.'s
 	public void initBoard(char[][] board)
@@ -59,95 +58,86 @@ public class SnakeModel
 	}
 	public void right(char[][] board)
 	{
-		clearBody(board);
-		for(int i = snakeSize; i>0; i--) {
-			snakeBodyX[i] = snakeBodyX[i-1];
-			snakeBodyY[i] = snakeBodyY[i-1];
-			board[snakeBodyX[i]][snakeBodyY[i]] = 's';
+		try {
+			clearBody(board);
+			moveSnakeBody(board);
+			snakeBodyY[0] += 1;
+			checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
+			board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+		} catch(ArrayIndexOutOfBoundsException e) {
+			gameOver();
 		}
-		snakeBodyY[0] += 1;
-		checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
-		board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
-//		printBoard(board);
+		
 	}
 	public void left(char[][] board)
 	{
-		clearBody(board);
-		for(int i = snakeSize; i>0; i--) {
-			snakeBodyX[i] = snakeBodyX[i-1];
-			snakeBodyY[i] = snakeBodyY[i-1];
-			board[snakeBodyX[i]][snakeBodyY[i]] = 's';
+		try {
+			clearBody(board);
+			moveSnakeBody(board);
+			snakeBodyY[0] -= 1;
+			checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
+			board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+		} catch(ArrayIndexOutOfBoundsException e) {
+			gameOver();
 		}
-		snakeBodyY[0] -= 1;
-		checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
-		board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
-//		printBoard(board);
+		
 	}
 	public void up(char[][] board)
 	{
-		clearBody(board);
-		for(int i = snakeSize; i>0; i--) {
-			snakeBodyX[i] = snakeBodyX[i-1];
-			snakeBodyY[i] = snakeBodyY[i-1];
-			board[snakeBodyX[i]][snakeBodyY[i]] = 's';
+		try {
+			clearBody(board);
+			moveSnakeBody(board);
+			snakeBodyX[0] -= 1; 
+			checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
+			board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+		} catch(ArrayIndexOutOfBoundsException e) {
+			gameOver();
 		}
-		snakeBodyX[0] -= 1; 
-		checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
-		board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
-//		printBoard(board);
+		
 	}
 	public void down(char[][] board)
 	{
-		clearBody(board);
+		try {
+			clearBody(board);
+			moveSnakeBody(board);
+			snakeBodyX[0] += 1; 
+			checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
+			board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+		} catch(ArrayIndexOutOfBoundsException e) {
+			gameOver();
+		}
+		
+	}
+	//make tail follow snake head properly
+	public void moveSnakeBody(char[][] board)
+	{
+		//start with last element in snake body array. every time the snake moves, each element's new location is set to be the previous elements old location
 		for(int i = snakeSize; i>0; i--) {
 			snakeBodyX[i] = snakeBodyX[i-1];
 			snakeBodyY[i] = snakeBodyY[i-1];
 			board[snakeBodyX[i]][snakeBodyY[i]] = 's';
 		}
-		snakeBodyX[0] += 1; 
-		checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
-		board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
-//		printBoard(board);
 	}
-	//used when playing without graphics, need to edit
+	//used only when playing without graphics
 	public void move(char[][] board)
 	{
-		while(true)
+		while(running)
 		{
-			clearBody(board);
-			
-			//fill in body of snake.
-			//start with last element. the new location of each element is the previous element's old location
-			for(int i = snakeSize; i>0; i--) {
-				snakeBodyX[i] = snakeBodyX[i-1];
-				snakeBodyY[i] = snakeBodyY[i-1];
-				board[snakeBodyX[i]][snakeBodyY[i]] = 's';
-			}
-			
-			//moving head of snake depending on input
 			int input = scan.nextInt();
 			if(input == 2) {
-				snakeBodyX[0] += 1; 
-				checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
-				board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+				down(board);
 				printBoard(board);
 			}
 			if(input == 4) {
-				snakeBodyY[0] -= 1;
-				checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
-				board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+				left(board);
 				printBoard(board);
 			}
 			if(input == 8) {
-				snakeBodyX[0] -= 1; 
-				checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
-				board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+				up(board);
 				printBoard(board);
 			}
 			if(input == 6) {
-				snakeBodyY[0] += 1;
-				checkSpot(board, snakeBodyX[0], snakeBodyY[0]);
-				board[snakeBodyX[0]][snakeBodyY[0]] = 'x';
+				right(board);
 				printBoard(board);
 			}
 		}
@@ -164,14 +154,13 @@ public class SnakeModel
 		}
 		if(board[x][y] == 's')//means you ran into yourself. end game and display score
 		{
-			System.out.println("You lose");
-			System.out.println("Score: " + score);
+			gameOver();
 		}
-		if(board[x][y] != '.' && board[x][y] != 'o' && board[x][y] != 's')//means you went offscreen
-		{
-			System.out.println("You lose");
-			System.out.println("Score: "+score);
-		}
+	}
+	public void gameOver()
+	{
+		running = false; 
+		System.out.println("Game Over\nYour score: "+score);
 	}
 	//remove all 's's on board
 	public void clearBody(char[][] board)
@@ -259,6 +248,14 @@ public class SnakeModel
 			System.out.println();
 		}
 	}
+	public boolean getGameState()
+	{
+		return running; 
+	}
+	public int getScore()
+	{
+		return score;
+	}
 	public char[][] getBoard()
 	{
 		return board;
@@ -270,7 +267,6 @@ public class SnakeModel
 	public static void main(String[] args)
 	{
 		SnakeModel model = new SnakeModel();
-		//model.printBoard(model.board);
+		//model.printBoard(model.getBoard());
 	}
-
 }
