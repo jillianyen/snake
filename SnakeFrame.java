@@ -1,4 +1,3 @@
-package snake2;
 import java.awt.event.*;
 import javax.swing.JFrame;
 
